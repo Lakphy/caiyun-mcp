@@ -48,7 +48,8 @@ export class CaiyunWeatherServer {
       {
         name: "caiyun-weather",
         version: "1.0.0",
-        description: "彩云天气API v2.6 MCP服务器。提供中国大陆地区高精度天气数据，包括实时天气、分钟级降水预报、小时级预报、天级预报、官方气象预警等功能。基于专业气象数据源，支持多语言和单位制，适用于各类天气相关应用场景。",
+        description:
+          "彩云天气API v2.6 MCP服务器。提供中国大陆地区高精度天气数据，包括实时天气、分钟级降水预报、小时级预报、天级预报、官方气象预警等功能。基于专业气象数据源，支持多语言和单位制，适用于各类天气相关应用场景。",
       },
       {
         capabilities: {
@@ -65,7 +66,11 @@ export class CaiyunWeatherServer {
 
     this.fetchImpl = fetchImplementation;
     this.requestTimeoutMs = options?.requestTimeoutMs ?? 15000;
-    this.apiToken = (options?.token ?? process.env.CAIYUN_API_TOKEN ?? "").trim();
+    this.apiToken = (
+      options?.token ??
+      process.env.CAIYUN_API_TOKEN ??
+      ""
+    ).trim();
 
     if (!this.apiToken) {
       throw new Error("错误: 请设置 CAIYUN_API_TOKEN 环境变量");
@@ -81,10 +86,7 @@ export class CaiyunWeatherServer {
     config: ToolConfig
   ): WeatherToolParams {
     if (typeof rawParams !== "object" || rawParams === null) {
-      throw new McpError(
-        ErrorCode.InvalidParams,
-        "请求参数必须是对象"
-      );
+      throw new McpError(ErrorCode.InvalidParams, "请求参数必须是对象");
     }
 
     const params = rawParams as Record<string, unknown>;
@@ -166,10 +168,7 @@ export class CaiyunWeatherServer {
       }
     }
 
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `${label}必须是有效的数字`
-    );
+    throw new McpError(ErrorCode.InvalidParams, `${label}必须是有效的数字`);
   }
 
   private parseInteger(
@@ -186,10 +185,7 @@ export class CaiyunWeatherServer {
     const numericValue = this.parseNumber(value, label);
 
     if (!Number.isInteger(numericValue)) {
-      throw new McpError(
-        ErrorCode.InvalidParams,
-        `${label}必须是整数`
-      );
+      throw new McpError(ErrorCode.InvalidParams, `${label}必须是整数`);
     }
 
     if (numericValue < min || numericValue > max) {
@@ -215,10 +211,7 @@ export class CaiyunWeatherServer {
       return value.trim();
     }
 
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `${label}必须是非空字符串`
-    );
+    throw new McpError(ErrorCode.InvalidParams, `${label}必须是非空字符串`);
   }
 
   private parseBoolean(
@@ -244,10 +237,7 @@ export class CaiyunWeatherServer {
       }
     }
 
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `${label}必须是布尔值`
-    );
+    throw new McpError(ErrorCode.InvalidParams, `${label}必须是布尔值`);
   }
 
   private async makeApiRequest(
@@ -357,8 +347,11 @@ export class CaiyunWeatherServer {
       return `彩云天气API错误: ${fallbackMessage} (状态: ${status})`;
     }
 
-    const { error, error_code: errorCode, status: apiStatus } =
-      payload as Partial<ErrorResponse>;
+    const {
+      error,
+      error_code: errorCode,
+      status: apiStatus,
+    } = payload as Partial<ErrorResponse>;
 
     const messageParts = [
       error ?? fallbackMessage,
@@ -371,10 +364,9 @@ export class CaiyunWeatherServer {
 
   private setupToolHandlers() {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-      const tools = (Object.entries(TOOL_CONFIGS) as [
-        ToolName,
-        ToolConfig
-      ][]).map(([name, config]) => ({
+      const tools = (
+        Object.entries(TOOL_CONFIGS) as [ToolName, ToolConfig][]
+      ).map(([name, config]) => ({
         name,
         description: config.description,
         inputSchema: config.schema,
@@ -385,12 +377,9 @@ export class CaiyunWeatherServer {
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
-      
+
       if (!hasToolConfig(name)) {
-        throw new McpError(
-          ErrorCode.MethodNotFound,
-          `未知的工具: ${name}`
-        );
+        throw new McpError(ErrorCode.MethodNotFound, `未知的工具: ${name}`);
       }
 
       const config = getToolConfig(name)!;
@@ -446,25 +435,20 @@ export class CaiyunWeatherServer {
     await this.server.connect(transport);
     // 获取 prompt 统计信息
     const promptStats = weatherPromptManager.getPromptStats();
-    console.error(`彩云天气 MCP Server 已启动 - API v2.6 | ${Object.keys(TOOL_CONFIGS).length} Tools | ${promptStats.total} Prompts | 专业气象知识服务`);
-    console.error(`Prompt 分类: ${Object.keys(promptStats.categories).join(', ')} | 知识领域: ${Object.keys(promptStats.domains).join(', ')}`);
+    console.error(
+      `彩云天气 MCP Server 已启动 - API v2.6 | ${
+        Object.keys(TOOL_CONFIGS).length
+      } Tools | ${promptStats.total} Prompts | 专业气象知识服务`
+    );
+    console.error(
+      `Prompt 分类: ${Object.keys(promptStats.categories).join(
+        ", "
+      )} | 知识领域: ${Object.keys(promptStats.domains).join(", ")}`
+    );
   }
 }
 
-async function main() {
+export async function run() {
   const server = new CaiyunWeatherServer();
   await server.run();
-}
-
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
-  main().catch((error) => {
-    console.error(
-      "Fatal error:",
-      error instanceof Error ? error.message : error
-    );
-    process.exit(1);
-  });
 }
