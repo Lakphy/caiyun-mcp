@@ -1,6 +1,6 @@
 {
   "name": "@lakphy-tools/caiyun-mcp",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "彩云天气API的MCP server，提供天气查询功能",
   "type": "module",
   "license": "MIT",
@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/lakphy/caiyun-mcp.git"
   },
-  "author": "lakphy-ols",
+  "author": "lakphy",
   "homepage": "https://github.com/lakphy/caiyun-mcp",
   "bin": {
     "caiyun-mcp": "./bin/caiyun-mcp.js"
